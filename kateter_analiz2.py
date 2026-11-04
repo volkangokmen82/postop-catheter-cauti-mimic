@@ -447,7 +447,7 @@ def main():
     a2.set_title("B", loc="left", fontweight="bold", fontsize=10)
     fig.tight_layout(w_pad=2.5)
     for ext in ("png", "tiff"):
-        fig.savefig(odir / f"Figure1.{ext}", bbox_inches="tight", dpi=300)
+        fig.savefig(odir / f"Figure1.{ext}", bbox_inches="tight", dpi=600)
     plt.close(fig)
 
     # ---- Sekil 2: orman grafigi (A Cox, B lojistik)
@@ -478,7 +478,7 @@ def main():
     fig.text(0.01, -0.01, "*Reference: general surgery. MV: mechanical ventilation.", fontsize=6.5, color=MUTED)
     fig.tight_layout(w_pad=3.5)
     for ext in ("png", "tiff"):
-        fig.savefig(odir / f"Figure2.{ext}", bbox_inches="tight", dpi=300)
+        fig.savefig(odir / f"Figure2.{ext}", bbox_inches="tight", dpi=600)
     plt.close(fig)
 
     # ---- Sekil 3: servis bazinda kateter suresi dagilimi (100% yigilmis cubuk)
@@ -505,7 +505,7 @@ def main():
               loc="lower left", bbox_to_anchor=(0, 1.0))
     fig.tight_layout()
     for ext in ("png", "tiff"):
-        fig.savefig(odir / f"Figure3.{ext}", bbox_inches="tight", dpi=300)
+        fig.savefig(odir / f"Figure3.{ext}", bbox_inches="tight", dpi=600)
     plt.close(fig)
 
     with pd.ExcelWriter(odir / "kateter_tablolar_v2.xlsx") as xw:
