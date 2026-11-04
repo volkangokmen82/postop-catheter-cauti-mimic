@@ -16,7 +16,7 @@ The code uses **MIMIC-IV v3.1** (https://doi.org/10.13026/kpb9-mt58). The data a
 pip install -r requirements.txt
 python catheter_cab_analysis.py --root <path-to-MIMIC-IV>
 ```
-Results are written to `results/` next to the script: a summary text file, Excel tables and Figures 1–3 (PNG and TIFF, 600 dpi).
+Results are written to `results/` next to the script: a summary text file, Excel tables, the flow diagram (Figure 1) and Figures 2–4 (PNG and TIFF, 600 dpi).
 
 ## Analyses
 - **Cohort:** adults; surgical service at ICU admission; first ICU stay ≥24 h; indwelling (Foley) catheter (procedureevents itemid 229351); episodes <24 h apart merged; positive urine culture from 48 h before to 48 h after insertion excluded.

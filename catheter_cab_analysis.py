@@ -19,7 +19,7 @@ Analyses
  - Logistic model for catheter duration >48 h
  - Mobilisation and removal: temporal order, time-dependent Cox, 24-h landmark analysis
  - Re-catheterisation within 48 h: complete follow-up subset and censored Cox model
- - Nursing process indicators; Figures 1-3 (600 dpi)
+ - Nursing process indicators; Figure 1 (flow diagram) and Figures 2-4 (600 dpi)
 
 Installation: pip install -r requirements.txt
 Usage:        python catheter_cab_analysis.py --root <path-to-MIMIC-IV>
@@ -856,7 +856,7 @@ def main():
     a2.set_title("B", loc="left", fontweight="bold", fontsize=10)
     fig.tight_layout(w_pad=2.5)
     for ext in ("png", "tiff"):
-        fig.savefig(odir / f"Figure1.{ext}", bbox_inches="tight", dpi=600)
+        fig.savefig(odir / f"Figure2.{ext}", bbox_inches="tight", dpi=600)
     plt.close(fig)
 
     names = {"age10": "Age (per 10 years)", "female": "Female sex", "diabetes": "Diabetes mellitus",
@@ -892,7 +892,7 @@ def main():
              fontsize=6.5, color=MUTED)
     fig.tight_layout(w_pad=3.5)
     for ext in ("png", "tiff"):
-        fig.savefig(odir / f"Figure2.{ext}", bbox_inches="tight", dpi=600)
+        fig.savefig(odir / f"Figure3.{ext}", bbox_inches="tight", dpi=600)
     plt.close(fig)
 
     order = ["Total"] + SERVICES
@@ -916,8 +916,50 @@ def main():
     ax.legend(title="Catheter duration", ncol=4, fontsize=7, title_fontsize=7, frameon=False, loc="lower left", bbox_to_anchor=(0, 1.0))
     fig.tight_layout()
     for ext in ("png", "tiff"):
-        fig.savefig(odir / f"Figure3.{ext}", bbox_inches="tight", dpi=600)
+        fig.savefig(odir / f"Figure4.{ext}", bbox_inches="tight", dpi=600)
     plt.close(fig)
+
+    # ---------- Figure 1: hasta secim akis semasi
+    from matplotlib.patches import FancyBboxPatch
+    def nf(v):
+        v = int(v)
+        return sup(v) if v < 10 else (f"{v:,}" if v >= 10000 else str(v))
+    ks = list(flow.keys())
+    n_all, n_ad, n_sv, n_fs, n_24, n_fc, n_ex = [flow[k] for k in ks[:7]]
+    n_po = len(main_pop)
+    both = int(((d.or_proc == 1) & (d.pacu == 1)).sum())
+    main_boxes = [(f"All ICU stays in MIMIC-IV v3.1\nn = {nf(n_all)}", 10.6),
+                  (f"Adult (≥18 years) ICU stays\nn = {nf(n_ad)}", 9.0),
+                  (f"Surgical service at ICU admission\nn = {nf(n_sv)}", 7.4),
+                  (f"First ICU stay of each patient, ≥24 hours\nn = {nf(n_24)}", 5.8),
+                  (f"Indwelling (Foley) urinary catheter documented\nn = {nf(n_fc)}", 4.2),
+                  (f"Surgical-service ICU cohort\nn = {nf(n_ex)}", 2.6),
+                  (f"Verified postoperative cohort\n(primary analysis)\nn = {nf(n_po)}", 1.0)]
+    side_boxes = [(f"Excluded: non-surgical service\nn = {nf(n_ad - n_sv)}", 8.2, 1.0),
+                  (f"Excluded: repeat ICU stay\n(n = {nf(n_sv - n_fs)}) or stay <24 h (n = {nf(n_fs - n_24)})", 6.6, 1.0),
+                  (f"Excluded: no indwelling\ncatheter, n = {nf(n_24 - n_fc)}", 5.0, 1.0),
+                  (f"Excluded: positive urine culture\n48 h before to 48 h after\ninsertion, n = {nf(n_fc - n_ex)}", 3.4, 1.0),
+                  (f"Excluded from primary analysis: no\nsurgical procedure code on the ICU\nadmission day or the day before and\nno PACU transfer, n = {nf(n_ex - n_po)}", 1.8, 1.15)]
+    fig, ax = plt.subplots(figsize=(7.2, 8.2), dpi=600)
+    ax.set_xlim(0, 10); ax.set_ylim(0.3, 11.3); ax.axis("off")
+    W_, H_ = 5.4, 1.0
+    for i, (t_, y_) in enumerate(main_boxes):
+        last = i >= len(main_boxes) - 2
+        ax.add_patch(FancyBboxPatch((0.4, y_ - H_ / 2), W_, H_, boxstyle="round,pad=0.02,rounding_size=0.08",
+                                    fc="#eaf2fd" if last else "white", ec=BLUE, lw=1.4))
+        ax.text(0.4 + W_ / 2, y_, t_, ha="center", va="center", fontsize=8.0, color=INK, fontweight="bold" if last else "normal")
+        if i:
+            ax.annotate("", (0.4 + W_ / 2, y_ + H_ / 2 + 0.02), (0.4 + W_ / 2, main_boxes[i - 1][1] - H_ / 2 - 0.02),
+                        arrowprops=dict(arrowstyle="-|>", color=MUTED, lw=1.1))
+    for t_, y_, h_ in side_boxes:
+        ax.add_patch(FancyBboxPatch((6.1, y_ - h_ / 2), 3.75, h_, boxstyle="round,pad=0.02,rounding_size=0.08",
+                                    fc="#f6f6f4", ec=MUTED, lw=1.0))
+        ax.text(7.975, y_, t_, ha="center", va="center", fontsize=7.0, color=INK)
+        ax.annotate("", (6.08, y_), (0.4 + W_ / 2, y_), arrowprops=dict(arrowstyle="-|>", color=MUTED, lw=1.0))
+    for ext in ("png", "tiff"):
+        fig.savefig(odir / f"Figure1.{ext}", bbox_inches="tight", dpi=600)
+    plt.close(fig)
+    out(f"  Sekil 1 akis: kod={sup(d.or_proc.sum())}, PACU={sup(d.pacu.sum())}, ikisi={sup(both)}, dogrulanmis={sup(n_po)}")
 
     out("\nAKIS:")
     for k, v in flow.items():
